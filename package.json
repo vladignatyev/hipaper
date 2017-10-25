@@ -1,0 +1,16 @@
+{
+  "name": "hipaper",
+  "version": "1.0.0",
+  "description": "Hipaper is a paper HD Wallet generator, working on the top of code base of bitcoinjs-lib",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vladimir Ignatev",
+  "license": "MIT",
+  "dependencies": {
+    "bip39": "^2.4.0",
+    "bitcoinjs-lib": "^3.2.1"
+  }
+}
