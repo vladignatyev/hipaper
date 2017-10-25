@@ -83,8 +83,12 @@ if (process.argv.indexOf('open') >= 0) { // open wallet instead of generation
   console.log('Type down your mnemonic phrase, word-by-word and then press Enter:');
   process.stdin.on('data', function(data){
     const userInput = data.toString();
-    const sanedInput = userInput.replace('\n', '').replace('\r','').split(' ').join(' ')
-    printPaperWalletBasedOnEntropy(bip39.mnemonicToEntropy(sanedInput));
+    const sanedInput = userInput.replace('\n', '').replace('\r','').split(' ').join(' ');
+    try {
+      printPaperWalletBasedOnEntropy(bip39.mnemonicToEntropy(sanedInput));
+    } catch (error) {
+      console.log('[ERR] Invalid mnemonic. Try re-check all words in mnemonic phrase and type them again!');
+    }
   });
 } else {
   crypto.randomBytes(32, function(err, buffer){
