@@ -28,33 +28,44 @@ let instruction = `
 `;
 
 
-crypto.randomBytes(64, function(err, buffer){
-  console.log('\033[2J');
-  console.log(banner);
-  console.log('Random seed:');
-  console.log('=======================');
-  console.log(buffer.toString('hex'));
+function printPaperWalletBasedOnEntropy(buffer) {
+  console.log('\033[2J');  // clear terminal
 
-  const mnemonic = bip39.entropyToMnemonic(buffer);
+  console.log(banner);  // show beautiful banner
+
+  if (buffer) {
+    console.log('Random seed:');
+    console.log('=======================');
+    console.log(buffer.toString('hex'));
+  }
+
+  let mnemonic = bip39.entropyToMnemonic(buffer);  // get mnemonic phrase
 
   console.log('\r\nBIP 39 mnemonic phrase:');
   console.log('===============================');
+
+  // beautiful output for mnemonic phrase
   const words = mnemonic.split(' ');
   let mnemonicStrings = '';
   let columns = 0;
   for (let w = 0; w < words.length; w++) {
     mnemonicStrings = mnemonicStrings + " " + words[w];
     columns++;
-    if (columns == 4) {
+    if (columns == 6) {
       console.log(mnemonicStrings);
       mnemonicStrings = '';
       columns = 0;
     }
   }
+
   console.log('===============================\r\n');
+
+  // generate HD Wallet root based on seed, extracted from mnemonic phrase
   const seed = bip39.mnemonicToSeed(mnemonic);
   const root = bitcoin.HDNode.fromSeedBuffer(seed);
 
+  // derive addressCount addresses and print out them along
+  // with private keys in WIF format
   let index = 0;
   for (let i = 0; i < addressCount; i++) {
     index = i;
@@ -63,5 +74,20 @@ crypto.randomBytes(64, function(err, buffer){
     console.log('Private key in WIF format: ' + derived.keyPair.toWIF() + '\r\n');
   }
 
+  // how to instruction
   console.log(instruction);
-})
+}
+
+if (process.argv.indexOf('open') >= 0) { // open wallet instead of generation
+  console.log('\033[2J');  // clear terminal
+  console.log('Type down your mnemonic phrase, word-by-word and then press Enter:');
+  process.stdin.on('data', function(data){
+    const userInput = data.toString();
+    const sanedInput = userInput.replace('\n', '').replace('\r','').split(' ').join(' ')
+    printPaperWalletBasedOnEntropy(bip39.mnemonicToEntropy(sanedInput));
+  });
+} else {
+  crypto.randomBytes(32, function(err, buffer){
+    printPaperWalletBasedOnEntropy(buffer);
+  })
+}
