@@ -2,6 +2,7 @@ let crypto = require('crypto')
 let bip39 = require('bip39')
 let bitcoin = require('bitcoinjs-lib')
 
+let startAddressIdx = 0
 let addressCount = 5  // should be enough
 
 let banner = `
@@ -28,7 +29,7 @@ let instruction = `
 `;
 
 
-function printPaperWalletBasedOnEntropy(buffer) {
+function printPaperWalletBasedOnEntropy(buffer, startAddressIdx, addressCount) {
   console.log('\033[2J');  // clear terminal
 
   console.log(banner);  // show beautiful banner
@@ -40,6 +41,11 @@ function printPaperWalletBasedOnEntropy(buffer) {
   }
 
   let mnemonic = bip39.entropyToMnemonic(buffer);  // get mnemonic phrase
+
+  if (!bip39.validateMnemonic(mnemonic)) {
+    console.log('Invalid mnemonic pass phrase!');
+    process.exit(1);
+  }
 
   console.log('\r\nBIP 39 mnemonic phrase:');
   console.log('===============================');
@@ -66,11 +72,11 @@ function printPaperWalletBasedOnEntropy(buffer) {
 
   // derive addressCount addresses and print out them along
   // with private keys in WIF format
-  let index = 0;
+
   for (let i = 0; i < addressCount; i++) {
-    index = i;
+    let index = startAddressIdx + i;
     const derived = root.derivePath("m/0'/0/" + index.toString());
-    console.log('Address:                   ' + derived.getAddress());
+    console.log('Address #' + index + ':                 ' + derived.getAddress());
     console.log('Private key in WIF format: ' + derived.keyPair.toWIF() + '\r\n');
   }
 
@@ -79,13 +85,16 @@ function printPaperWalletBasedOnEntropy(buffer) {
 }
 
 if (process.argv.indexOf('open') >= 0) { // open wallet instead of generation
+  let argCount = parseInt(process.argv[process.argv.indexOf('open') + 1])
+  let argStartAddressIdx = parseInt(process.argv[process.argv.indexOf('open') + 2])
+
   console.log('\033[2J');  // clear terminal
   console.log('Type down your mnemonic phrase, word-by-word and then press Enter:');
   process.stdin.on('data', function(data){
     const userInput = data.toString();
     const sanedInput = userInput.replace('\n', '').replace('\r','').split(' ').join(' ');
     try {
-      printPaperWalletBasedOnEntropy(bip39.mnemonicToEntropy(sanedInput));
+      printPaperWalletBasedOnEntropy(bip39.mnemonicToEntropy(sanedInput), argStartAddressIdx || startAddressIdx, argCount || addressCount);
     } catch (error) {
       console.log('[ERR] Invalid mnemonic. Try re-check all words in mnemonic phrase and type them again!');
     }
