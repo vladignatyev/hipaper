@@ -3,7 +3,7 @@ let bip39 = require('bip39')
 let bitcoin = require('bitcoinjs-lib')
 
 let startAddressIdx = 0
-let addressCount = 5  // should be enough
+let addressCount = 10  // should be enough
 
 let banner = `
 ██╗  ██╗██╗██████╗  █████╗ ██████╗ ███████╗██████╗
@@ -84,6 +84,8 @@ function printPaperWalletBasedOnEntropy(buffer, startAddressIdx, addressCount) {
   console.log(instruction);
 }
 
+
+
 if (process.argv.indexOf('open') >= 0) { // open wallet instead of generation
   let argCount = parseInt(process.argv[process.argv.indexOf('open') + 1])
   let argStartAddressIdx = parseInt(process.argv[process.argv.indexOf('open') + 2])
@@ -100,7 +102,8 @@ if (process.argv.indexOf('open') >= 0) { // open wallet instead of generation
     }
   });
 } else {
+  let argCount = parseInt(process.argv[process.argv.length - 1])
   crypto.randomBytes(32, function(err, buffer){
-    printPaperWalletBasedOnEntropy(buffer);
+    printPaperWalletBasedOnEntropy(buffer, 0, argCount || addressCount);
   })
 }
